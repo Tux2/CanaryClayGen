@@ -72,7 +72,7 @@ public class ClayGen extends Plugin implements Runnable {
     long timeformaxclay = 2*60*1000;
     int farmdelay = 5;
     int maxfarmdelay = 12;
-    String version = "0.8";
+    String version = "0.9";
     LinkedList<ClayDelay> gravellist = new LinkedList<ClayDelay>();
     LinkedList<Block> ingravel = new LinkedList<Block>();
     Random generator = new Random();
@@ -100,12 +100,13 @@ public class ClayGen extends Plugin implements Runnable {
             dispatchThread = new Thread(this);
             dispatchThread.start();
         }
+        //Custom drops doesn't work on canary yet... Will re-enable once hook gets added.
         //only initialize the following two if custom amount of drops is enabled...
-        if(customdrops) {
+        /*if(customdrops) {
         	loadClayBlocks();
         	etc.getLoader().addListener( PluginLoader.Hook.BLOCK_BROKEN, l, this, PluginListener.Priority.MEDIUM);
         	etc.getLoader().addListener( PluginLoader.Hook.BLOCK_PHYSICS, l, this, PluginListener.Priority.MEDIUM);
-        }else if(defaultclaydrop != 4 && defaultclaydrop > 0) {
+        }else */if(defaultclaydrop != 4 && defaultclaydrop > 0) {
         	//let's activate this if we are changing the clay drop amount
         	etc.getLoader().addListener( PluginLoader.Hook.BLOCK_BROKEN, l, this, PluginListener.Priority.MEDIUM);
         }
@@ -198,7 +199,9 @@ public class ClayGen extends Plugin implements Runnable {
 			    try {
 			    	graveltoclaychance = Double.parseDouble(sclaychance.trim());
 			    } catch (Exception ex) {
-			    	
+			    	if(debug) {
+			    		System.out.println("Coudn't parse clay chance");
+			    	}
 			    }
 
 			    try {
@@ -227,7 +230,7 @@ public class ClayGen extends Plugin implements Runnable {
 			    } catch (Exception ex) {
 			    	
 			    }
-			    if(dbversion < 0.7) {
+			    if(dbversion < 0.9) {
 			    	updateIni();
 			    }
 			} catch (IOException e) {
@@ -273,7 +276,7 @@ public class ClayGen extends Plugin implements Runnable {
 					"savefarm = " + savefarm + "\n" +
 					"\n" +
 					"#The following lines let you set a custom number of clay drops based on the amount\n" +
-					"#of time that water has been running over them.\n" +
+					"#of time that water has been running over them. (BROKEN! WAITING ON HOOKS IN CANARY)\n" +
 					"#customdrops, if true, enables the custom drops\n" +
 					"customdrops = " + customdrops + "\n" +
 					"#maxclay sets the maximum amount of clay a block can give\n" +
@@ -283,6 +286,7 @@ public class ClayGen extends Plugin implements Runnable {
 					"#timeformaxclay, sets how long the player must wait for the max amount of clay\n" +
 					"# in 10 second intervals. 12 = 120 seconds.\n" +
 					"timeformaxclay = " + (timeformaxclay/10/1000) + "\n" +
+					"\n" +
 					"#graveltoclaychance sets the chance from 0.0% to 100.0% of the gravel turning into clay\n" +
 					"graveltoclaychance = " + graveltoclaychance + "\n" +
 					"#Do not change anything below this line unless you know what you are doing!\n" +
@@ -296,12 +300,15 @@ public class ClayGen extends Plugin implements Runnable {
 
 	public synchronized void convertBlocks(Block blockfrom, Block blockto) {
 		int waterid = blockfrom.getType();
+		if(debug) {
+			System.out.println(System.currentTimeMillis() + "Waterflow from id: " + blockfrom.getType() + ", to: " + blockto.getType() + " at: " + blockto.getX() + ","+ blockto.getY() + ","+ blockto.getZ());
+		}
 		if((waterenabled && (waterid == 8 || waterid == 9)) || (lavaenabled && (waterid == 10 || waterid == 11))) {
-			Block thegravelblocks[] = {blockto.getFace(Block.Face.Bottom),
+			Block thegravelblocks[] = {blockto, blockto.getFace(Block.Face.Bottom)/*,
 					blockto.getFace(Block.Face.Left),
 					blockto.getFace(Block.Face.Right),
 					blockto.getFace(Block.Face.Front),
-					blockto.getFace(Block.Face.Back)};
+					blockto.getFace(Block.Face.Back)*/};
 			if(debug) {
 	    		System.out.println("Water is flowing...");
 	    	}
@@ -332,14 +339,35 @@ public class ClayGen extends Plugin implements Runnable {
 		    	    	}else {
 		    	    		//Is this block going to convert?
 		    	            int rand = generator.nextInt(10000);
-		    	    		if(rand >= (10000.0 - (graveltoclaychance * 100.0))) {
-				    	    	thegravelblocks[i].setType(CLAY);
-				    	    	thegravelblocks[i].update();
+		    	    		if(graveltoclaychance == 100.0) {
+		    	    			thegravelblocks[i].setType(CLAY);
+		    	    			thegravelblocks[i].update();
 				    	    	//if custom amount of drops is enabled, let's add them to the queue
-				    	    	if(customdrops) {
+				    	    	/*if(customdrops) {
 				            		clayblocks.put(compileBlockString(thegravelblocks[i]), new ClayDelay(thegravelblocks[i]));
 				            		saveClayBlocks();
-				            	}
+				            	}*/
+		    	    		}else if ( rand >= (10000.0 - (graveltoclaychance * 100.0))) {
+		    	    			if(waterenabled && lavaenabled) {
+		    		            	//See if there is a water block next to it...
+		    		            	if(!hasBlockNextTo(thegravelblocks[i], FLOWINGWATER, WATER)) {
+		    		            		thegravelblocks[i].setType(CLAY);
+				    	    			thegravelblocks[i].update();
+		    			            }
+		    		            }else if(waterenabled) {
+		    		            	//See if there is a water block next to it...
+		    		            	if(!hasBlockNextTo(thegravelblocks[i], FLOWINGWATER, WATER)) {
+		    		            		thegravelblocks[i].setType(CLAY);
+				    	    			thegravelblocks[i].update();
+		    			            }
+		    		            	//don't want it to happen twice as fast when there is lava...
+		    		            }else if(lavaenabled) {
+		    		            	//See if there is a lava block next to it...
+		    		            	if(!hasBlockNextTo(thegravelblocks[i], FLOWINGLAVA, LAVA)) {
+		    		            		thegravelblocks[i].setType(CLAY);
+				    	    			thegravelblocks[i].update();
+		    			            }
+		    		            }
 		    	    		}
 		    	    	}
 		    		}
@@ -440,15 +468,25 @@ public class ClayGen extends Plugin implements Runnable {
 		            	ingravel.remove(blockupdate.getBlock());
 		            	//Is this block going to convert?
 	    	            int rand = generator.nextInt(10000);
-	    	    		if(rand >= (10000.0 - (graveltoclaychance * 100.0))) {
+	    	            if(graveltoclaychance == 100.0) {
+	    	            	blockupdate.getBlock().setType(CLAY);
+	    	            	blockupdate.getBlock().update();
+			    	    	//if custom amount of drops is enabled, let's add them to the queue
+			    	    	/*if(customdrops) {
+			            		clayblocks.put(compileBlockString(thegravelblocks[i]), new ClayDelay(thegravelblocks[i]));
+			            		saveClayBlocks();
+			            	}*/
+	    	            	//This gets thrown way too often, resulting in a higher perecntage.
+	    	            	//Multiplier has been adjusted to compensate.
+	    	    		}else if(rand >= (10000.0 - (graveltoclaychance * 75.0))) {
 	    	    			//Remove the block, it's been updated!
 			            	blockupdate.getBlock().setType(CLAY);
 			            	blockupdate.getBlock().update();
-			            	if(customdrops) {
+			            	/*if(customdrops) {
 			            		blockupdate.resetTimeIn();
 			            		clayblocks.put(compileBlockString(blockupdate.getBlock()), blockupdate);
 			            		saveClayBlocks();
-			            	}
+			            	}*/
 	    	    		}
 		            	//Set the pointer to the right location.
 		            	i--;

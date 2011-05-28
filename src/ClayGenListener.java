@@ -36,13 +36,14 @@ public class ClayGenListener extends PluginListener {
     }
     
     public boolean onFlow(Block blockFrom, Block blockTo) {
-    	plugin.convertBlocks(blockFrom, blockTo);
+    	Block newtoblock = etc.getServer().getBlockAt(blockTo.getX(), blockTo.getY(), blockTo.getZ());
+    	plugin.convertBlocks(blockFrom, newtoblock);
     	return false;
     }
     
     public boolean onBlockPhysics (Block block, boolean placed) {
     	if(plugin.debug) {
-    		System.out.println("Physics event here!!!");
+    		System.out.println("Physics event here on block id: " + block.getType());
     	}
     	if(block.getType() == CLAY) {
     		if(plugin.waterenabled && plugin.lavaenabled) {
@@ -72,7 +73,7 @@ public class ClayGenListener extends PluginListener {
         			plugin.clayblocks.remove(plugin.compileBlockString(block));
         			plugin.saveClayBlocks();
         		}else {
-            		claycount = block.getData();
+            		//claycount = block.getData();
         		}
     		}else {
     			claycount = plugin.defaultclaydrop;
