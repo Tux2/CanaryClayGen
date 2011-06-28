@@ -15,13 +15,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-
-
 import java.io.Serializable;
 
 public class ClaySaveBlock implements Serializable {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 127511287850119727L;
 	int x = 0;
 	int y = 0;
 	int z = 0;
@@ -32,38 +33,42 @@ public class ClaySaveBlock implements Serializable {
 	ClaySaveBlock(ClayDelay yourblock) {
 		this(yourblock.getBlock().getX(),yourblock.getBlock().getY(),
 				yourblock.getBlock().getZ(),yourblock.getDelay(), 
-				System.currentTimeMillis() - yourblock.getInTime());
+				System.currentTimeMillis() - yourblock.getInTime(), yourblock.getBlock().getWorld());
 	}
 		
 	ClaySaveBlock(Block yourblock) {
 		this(yourblock.getX(),yourblock.getY(),
-				yourblock.getZ(), 0, 0);
+				yourblock.getZ(), 0, 0, yourblock.getWorld());
 	}
 	
 	ClaySaveBlock(Block yourblock, int delay) {
 		this(yourblock.getX(),yourblock.getY(),
-				yourblock.getZ(), delay, 0);
+				yourblock.getZ(), delay, 0, yourblock.getWorld());
 	}
 	
 	ClaySaveBlock(Block yourblock, int delay, long timeelapsed) {
 		this(yourblock.getX(),yourblock.getY(),
-				yourblock.getZ(), delay, timeelapsed);
+				yourblock.getZ(), delay, timeelapsed, yourblock.getWorld());
 	}
 	
-	ClaySaveBlock(int x, int y, int z) {
-		this(x, y, z, 0, 0);
+	ClaySaveBlock(int x, int y, int z, World world) {
+		this(x, y, z, 0, 0, world);
 	}
 	
-	ClaySaveBlock(int x, int y, int z, int delay) {
-		this(x, y, z, delay, 0);
+	ClaySaveBlock(int x, int y, int z, int delay, World world) {
+		this(x, y, z, delay, 0, world);
 	}
 	
-	ClaySaveBlock(int x, int y, int z, int delay, long timeelapsed) {
+	ClaySaveBlock(int x, int y, int z, int delay, long timeelapsed, World world) {
 		this.x = x;
 		this.y = y;
 		this.z = z;
 		delayvalue = delay;
-		world = "world";
+		if(world.getType() == World.Type.NORMAL) {
+			this.world = "world";
+		}else if(world.getType() == World.Type.NETHER) {
+			this.world = "nether";
+		}
 	}
 	
 	/**

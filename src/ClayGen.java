@@ -612,8 +612,14 @@ public class ClayGen extends Plugin implements Runnable {
 			gravellist.clear();
 			ingravel.clear();
 			for(ClaySaveBlock blocklocation : glocations) {
-				Block theblock = etc.getServer().getBlockAt(blocklocation.getX(), 
+				Block theblock;
+				if(blocklocation.getWorld().equalsIgnoreCase("nether")) {
+					theblock = etc.getServer().getWorld(-1).getBlockAt(blocklocation.getX(), 
 						blocklocation.getY(), blocklocation.getZ());
+				}else {
+					theblock = etc.getServer().getWorld(0).getBlockAt(blocklocation.getX(), 
+							blocklocation.getY(), blocklocation.getZ());
+				}
 				gravellist.add(new ClayDelay(theblock, blocklocation.getDelayvalue(), blocklocation.getIntime()));
 				ingravel.add(theblock);
 			}
@@ -663,8 +669,14 @@ public class ClayGen extends Plugin implements Runnable {
 				}
 				clayblocks.clear();
 				for(ClaySaveBlock blocklocation : glocations) {
-					Block theblock = etc.getServer().getBlockAt(blocklocation.getX(), 
+					Block theblock;
+					if(blocklocation.getWorld().equalsIgnoreCase("nether")) {
+						theblock = etc.getServer().getWorld(-1).getBlockAt(blocklocation.getX(), 
 							blocklocation.getY(), blocklocation.getZ());
+					}else {
+						theblock = etc.getServer().getWorld(0).getBlockAt(blocklocation.getX(), 
+								blocklocation.getY(), blocklocation.getZ());
+					}
 					clayblocks.put(compileBlockString(theblock), new ClayDelay(theblock, blocklocation.getDelayvalue(), blocklocation.getIntime()));
 					if(debug) {
 						System.out.println("ClayGen: Reading block at: " + compileBlockString(theblock));

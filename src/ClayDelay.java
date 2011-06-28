@@ -19,6 +19,10 @@
 import java.io.Serializable;
 
 public class ClayDelay implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -2778223472425719486L;
 	Block theblock;
 	int delayvalue = 0;
 	long intime = System.currentTimeMillis();
