@@ -36,7 +36,7 @@ public class ClayGenListener extends PluginListener {
     }
     
     public boolean onFlow(Block blockFrom, Block blockTo) {
-    	Block newtoblock = etc.getServer().getBlockAt(blockTo.getX(), blockTo.getY(), blockTo.getZ());
+    	Block newtoblock = blockTo.getWorld().getBlockAt(blockTo.getX(), blockTo.getY(), blockTo.getZ());
     	plugin.convertBlocks(blockFrom, newtoblock);
     	return false;
     }
@@ -87,7 +87,7 @@ public class ClayGenListener extends PluginListener {
     		//drop the items
     		for(int i = 0; i < claycount; i++) {
     			//TODO: make sure this doesn't drop the clay in the exact position. have it a little random.
-        		etc.getServer().dropItem(block.getX(), block.getY(), block.getZ(), 337, 1);
+        		block.getWorld().dropItem(block.getX(), block.getY(), block.getZ(), 337, 1);
     		}
     		//turn the block to air, disabling further drops.
     		block.setType(0);
