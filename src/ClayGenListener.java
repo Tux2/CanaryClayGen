@@ -22,14 +22,14 @@
 public class ClayGenListener extends PluginListener {
     public static final int CLAY = 82;
 	private final ClayGen plugin;
-    public static final int GRAVEL = 13;
+    //public int GRAVEL = 13;
     boolean debug = false;
 
     public ClayGenListener(final ClayGen plugin) {
         this.plugin = plugin;
     }
     public boolean onBlockCreate(Player player, Block blockPlaced, Block blockClicked, int itemInHand) {
-    	if(blockPlaced.getType() == GRAVEL) {
+    	if(blockPlaced.getType() == plugin.GRAVEL) {
     		plugin.gravelPlaced(blockPlaced);
     	}
     	return false;

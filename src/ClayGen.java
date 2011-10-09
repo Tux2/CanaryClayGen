@@ -52,7 +52,7 @@ public class ClayGen extends Plugin implements Runnable {
     private Thread dispatchThread;
     private int activateblock = 45;
     public static final int CLAY = 82;
-    public static final int GRAVEL = 13;
+    public int GRAVEL = 13;
     public static final int WATER = 9;
     public static final int FLOWINGWATER = 8;
     public static final int LAVA = 11;
@@ -72,7 +72,7 @@ public class ClayGen extends Plugin implements Runnable {
     long timeformaxclay = 2*60*1000;
     int farmdelay = 5;
     int maxfarmdelay = 12;
-    String version = "1.0";
+    String version = "1.1";
     LinkedList<ClayDelay> gravellist = new LinkedList<ClayDelay>();
     LinkedList<Block> ingravel = new LinkedList<Block>();
     Random generator = new Random();
@@ -154,6 +154,7 @@ public class ClayGen extends Plugin implements Runnable {
 				reminderSettings.load(new FileInputStream(new File("plugins/ClayGen/claygen.ini")));
 		        
 		        String activatorblock = reminderSettings.getProperty("activatorblock", "87");
+		        String gravelblock = reminderSettings.getProperty("gravelblock", "13");
 		        String needactivator = reminderSettings.getProperty("needactivator", "true");
 		        String wateractivator = reminderSettings.getProperty("wateractivated", "true");
 		        String lavaactivator = reminderSettings.getProperty("lavaactivated", "true");
@@ -184,6 +185,14 @@ public class ClayGen extends Plugin implements Runnable {
 			    	activateblock = Integer.parseInt(activatorblock.trim());
 			    	if(!mcmmomode) {
 			    		System.out.println("ClayGen: Setting activation block to: " + activatorblock.trim());
+			    	}
+			    } catch (Exception ex) {
+			    	
+			    }
+		        try {
+			    	GRAVEL = Integer.parseInt(gravelblock.trim());
+			    	if(GRAVEL != 13) {
+			    		System.out.println("ClayGen: Setting gravel block to nonstandard block id: " + activatorblock.trim());
 			    	}
 			    } catch (Exception ex) {
 			    	
@@ -230,7 +239,7 @@ public class ClayGen extends Plugin implements Runnable {
 			    } catch (Exception ex) {
 			    	
 			    }
-			    if(dbversion < 0.9) {
+			    if(dbversion < 1.1) {
 			    	updateIni();
 			    }
 			} catch (IOException e) {
@@ -257,6 +266,11 @@ public class ClayGen extends Plugin implements Runnable {
 					"#block that comes in contact with flowing water\n" +
 					"#gets converted into clay.\n" +
 					"activatorblock = " + activateblock + "\n" +
+					"# gravel block is the actual block that gets turned\n" +
+					"# into clay. This option was added at a request of a\n" +
+					"# user. I AM NOT RESPONSIBLE FOR ANY CLAY BUILDINGS\n" +
+					"# OR OTHER STRUCTURES IF YOU CHANGE THIS. ;)\n" +
+					"gravelblock = " + GRAVEL + "\n" +
 					"needactivator = " + !mcmmomode + "\n" +
 					"#Set whether water flow will trigger the change\n" +
 					"wateractivated = " + waterenabled + "\n" +
